@@ -1,0 +1,8 @@
+flask>=2.0
+flask-cors
+python-dotenv
+# The project references an "autogen" client for LLM usage; pin to a placeholder package
+# Replace with the actual package names used in your environment.
+autogen-agentchat
+autogen-ext
+openai
