@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from services.story_generator import generate_user_story
 from services.reviewer import review_requirement
 from utils.validator import validate_input
+from models.story_db import add_message, get_history
 
 story_bp = Blueprint('story_bp', __name__)
 
@@ -17,6 +18,13 @@ def generate_story():
 
     requirement = data['requirement']
 
+    # Persist user requirement to history
+    try:
+        add_message('user', requirement)
+    except Exception:
+        # Do not block generation if history saving fails
+        pass
+    
     review = review_requirement(requirement)
     print(f"Review Score: {review['score']}, Reason: {review['reason']}")
 
@@ -42,3 +50,19 @@ def generate_story():
             "score": review["score"],
             "reason": review["reason"],
         },200
+    
+@story_bp.route('/history', methods=['GET'])
+def history():
+    """Return stored chat history as JSON."""
+    # optional query param for limit
+    try:
+        limit = int(request.args.get('limit', 100))
+    except Exception:
+        limit = 100
+ 
+    try:
+        msgs = get_history(limit=limit)
+    except Exception:
+        msgs = []
+ 
+    return jsonify({'history': msgs}), 200
